@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vitrine des boutiques</title>
+<style>
+  :root {
+    --fond: #eef2f0;
+    --carte: #ffffff;
+    --texte: #1d2b27;
+    --discret: #5d6f69;
+    --trait: #cfd9d5;
+    --accent: #0f5c4d;
+    --standard: #6b7b76;
+    --premium: #b7791f;
+    --pro: #0f5c4d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fond: #121a17; --carte: #1b2622; --texte: #e8efec;
+      --discret: #9db0a9; --trait: #2e3d38; --accent: #5fc7ae;
+      --standard: #9db0a9; --premium: #e0a84a; --pro: #5fc7ae;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--fond); color: var(--texte);
+    font-family: Georgia, "Times New Roman", serif; line-height: 1.5;
+  }
+  header { padding: 40px 20px 16px; max-width: 1000px; margin: auto; }
+  h1 { font-size: clamp(1.8rem, 5vw, 2.8rem); margin: 0 0 6px; letter-spacing: -0.5px; }
+  header p { margin: 0; color: var(--discret); font-family: system-ui, sans-serif; }
+  .outils {
+    max-width: 1000px; margin: 0 auto; padding: 12px 20px;
+    display: flex; gap: 10px; flex-wrap: wrap; font-family: system-ui, sans-serif;
+  }
+  .outils input, .outils select {
+    padding: 10px 12px; border: 1px solid var(--trait); border-radius: 6px;
+    background: var(--carte); color: var(--texte); font-size: 1rem;
+  }
+  .outils input { flex: 1 1 220px; }
+  .outils input:focus-visible, .outils select:focus-visible { outline: 2px solid var(--accent); }
+  main {
+    max-width: 1000px; margin: auto; padding: 8px 20px 60px;
+    display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+  article {
+    background: var(--carte); border: 1px solid var(--trait);
+    border-radius: 10px; padding: 20px; font-family: system-ui, sans-serif;
+  }
+  article h2 { font-family: Georgia, serif; font-size: 1.3rem; margin: 0 0 4px; }
+  .compte { display: inline-block; font-size: .85rem; font-weight: 600; margin-bottom: 14px; }
+  .compte.Standard { color: var(--standard); }
+  .compte.Premium { color: var(--premium); }
+  .compte.Pro { color: var(--pro); }
+  .prix { font-family: Georgia, serif; font-size: 2rem; margin: 0 0 14px; }
+  dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: .95rem; }
+  dt { color: var(--discret); }
+  dd { margin: 0; text-align: right; }
+  .vide { grid-column: 1 / -1; color: var(--discret); font-family: system-ui, sans-serif; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Vitrine des boutiques</h1>
+  <p>Consultation uniquement : les achats ne sont pas disponibles.</p>
+</header>
+
+<div class="outils">
+  <input id="recherche" type="search" placeholder="Rechercher une boutique" aria-label="Rechercher une boutique">
+  <select id="filtreCompte" aria-label="Filtrer par type de compte">
+    <option value="">Tous les comptes</option>
+    <option>Standard</option>
+    <option>Premium</option>
+    <option>Pro</option>
+  </select>
+  <select id="tri" aria-label="Trier">
+    <option value="nom">Trier par nom</option>
+    <option value="prixAsc">Prix croissant</option>
+    <option value="prixDesc">Prix décroissant</option>
+  </select>
+</div>
+
+<main id="liste"></main>
+
+<script>
+  // ✏️ Modifie ici tes boutiques
+  const boutiques = [
+    { nom: "Atelier du Puy",   montant: 49.90,  delai: "2 à 3 jours",   livraison: "Colissimo",        compte: "Pro" },
+    { nom: "Maison Volcan",    montant: 120.00, delai: "5 jours",       livraison: "Livraison offerte", compte: "Premium" },
+    { nom: "Le Petit Marché",  montant: 15.50,  delai: "1 semaine",     livraison: "Point relais",      compte: "Standard" },
+    { nom: "Bois & Lave",      montant: 89.00,  delai: "48 h",          livraison: "Chronopost",        compte: "Pro" },
+    { nom: "Cuir d'Auvergne",  montant: 210.00, delai: "10 jours",      livraison: "Colissimo suivi",   compte: "Premium" }
+  ];
+
+  const liste = document.getElementById("liste");
+  const recherche = document.getElementById("recherche");
+  const filtreCompte = document.getElementById("filtreCompte");
+  const tri = document.getElementById("tri");
+
+  const euro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
+
+  function afficher() {
+    const q = recherche.value.trim().toLowerCase();
+    let resultat = boutiques.filter(b =>
+      b.nom.toLowerCase().includes(q) &&
+      (!filtreCompte.value || b.compte === filtreCompte.value)
+    );
+
+    if (tri.value === "nom") resultat.sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
+    if (tri.value === "prixAsc") resultat.sort((a, b) => a.montant - b.montant);
+    if (tri.value === "prixDesc") resultat.sort((a, b) => b.montant - a.montant);
+
+    liste.innerHTML = resultat.length
+      ? resultat.map(b => `
+        <article>
+          <h2>${b.nom}</h2>
+          <span class="compte ${b.compte}">Compte ${b.compte}</span>
+          <p class="prix">${euro.format(b.montant)}</p>
+          <dl>
+            <dt>Délai</dt><dd>${b.delai}</dd>
+            <dt>Livraison</dt><dd>${b.livraison}</dd>
+          </dl>
+        </article>`).join("")
+      : '<p class="vide">Aucune boutique ne correspond à votre recherche.</p>';
+  }
+
+  [recherche, filtreCompte, tri].forEach(el => el.addEventListener("input", afficher));
+  afficher();
+</script>
+</body>
+</html>
